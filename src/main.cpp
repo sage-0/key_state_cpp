@@ -7,8 +7,8 @@
 #include "env.h"
 
 #define EAP_IDENTITY "anonymous" //if connecting from another corporation, use
-#define EAP_USERNAME userName
-#define EAP_PASSWORD  password //your Eduroam password
+#define EAP_USERNAME userName.c_str()
+#define EAP_PASSWORD  password.c_str() //your Eduroam password
 const char* ssid = "KOKADAI-WNETg"; // (Eduroam) SSID
 const char* host = "teu.ac.jp"; //external server domain for HTTP connection after authentification Example"arduino.php5.sk"
 
@@ -28,9 +28,9 @@ void wifiConnect(){
   WiFi.mode(WIFI_STA); //init wifi mode
   esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY));
     //provide identity
-   esp_wifi_sta_wpa2_ent_set_username((uint8_t *)EAP_USERNAME.c_str(), strlen(EAP_USERNAME.c_str()));
+   esp_wifi_sta_wpa2_ent_set_username((uint8_t *)EAP_USERNAME, strlen(EAP_USERNAME));
     //provide username --> identity and username is same
-    esp_wifi_sta_wpa2_ent_set_password((uint8_t *)EAP_PASSWORD.c_str(), strlen(EAP_PASSWORD.c_str()));
+    esp_wifi_sta_wpa2_ent_set_password((uint8_t *)EAP_PASSWORD, strlen(EAP_PASSWORD));
   //provide password
   esp_wifi_sta_wpa2_ent_enable();
   WiFi.begin(ssid); //connect to wifi
