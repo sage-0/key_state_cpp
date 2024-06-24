@@ -3,8 +3,16 @@
 #include <WiFiClient.h>
 #include <HTTPClient.h>
 
-//IDとかの定義
-#include "env.h"
+#include "env.h" // wifiパスワードなどの環境変数を読み込む。discordのトークンなどもここに書く。githubに上げないこと！！！
+/* src/env.h
+#include <string>
+
+std::string userName = "<KOKADAI-WNETのユーザー名>";
+std::string password = "<OKADAI-WNETのパスワード>";
+std::string discordUrl = "<WebhookのURL>";
+*/
+
+
 
 #define EAP_IDENTITY "anonymous" //if connecting from another corporation, use
 #define EAP_USERNAME userName.c_str()
@@ -12,10 +20,10 @@
 const char* ssid = "KOKADAI-WNETg"; // (Eduroam) SSID
 const char* host = "teu.ac.jp"; //external server domain for HTTP connection after authentification Example"arduino.php5.sk"
 
-const unsigned key_state = 33;
-char state_text;
-bool current_state = NULL;
-bool last_state = NULL;
+const unsigned key_state = 33; // センサーのピン番号
+char state_text; // 状態のテキスト
+bool current_state = NULL; // 現在の状態
+bool last_state = NULL; // 最後の状態
 
 void wifiConnect(){
   //
@@ -36,48 +44,47 @@ void wifiConnect(){
   WiFi.begin(ssid); //connect to wifi
   delay(1000);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);//after 30 seconds timeout - reset board
-    ESP.restart();
+    delay(1000);
+    ESP.restart(); // エラーが発生した場合は再起動
   }
-  Serial.println(WiFi.localIP());
-  digitalWrite(2, HIGH);
+  Serial.println(WiFi.localIP()); // IPアドレスを表示
+  digitalWrite(2, HIGH); // LEDを点灯
   return;
 }
 
 //セットアップ
 void setup() {
-  Serial.begin(115200);
-  pinMode(key_state, INPUT);
-  last_state = digitalRead(key_state);
-  pinMode(2, OUTPUT);
-  wifiConnect();
+  Serial.begin(115200); // シリアル通信を初期化
+  pinMode(key_state, INPUT); // センサーからの入力を設定
+  last_state = digitalRead(key_state); // 現在の状態で初期化
+  pinMode(2, OUTPUT); // LEDを設定
+  wifiConnect(); // WiFi接続
 }
 
 void loop() {
-  if(WiFi.status() != WL_CONNECTED){
-    digitalWrite(2, LOW);
-    wifiConnect();
+  if(WiFi.status() != WL_CONNECTED){ // WiFi接続が切れた場合
+    digitalWrite(2, LOW); // LEDを消灯
+    wifiConnect(); // WiFi接続
   }
 
-  current_state = digitalRead(key_state);
+  current_state = digitalRead(key_state); // 現在の状態を取得
   HTTPClient http; // HTTPクライアントを初期化
   // 状態が変化した場合
   if (current_state != last_state) {
-    last_state = current_state;
-    String state_text = current_state ? "Opened" : "Closed";
-    Serial.println("State: " + state_text);
+    last_state = current_state; // 最後の状態を更新
+    String state_text = current_state ? "Opened" : "Closed"; // 状態のテキストを設定
+    Serial.println("State: " + state_text); // 状態を表示
 
     if (WiFi.status() == WL_CONNECTED) { // WiFi接続を確認
       http.begin(discordUrl.c_str()); // HTTP接続を初期化
-      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
-      String payload = "content=" + state_text;
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded"); // ヘッダーを追加
+      String payload = "content=" + state_text; // ペイロードを設定
       int httpResponseCode = http.POST(payload); // POSTリクエストを送信
       Serial.println("HTTP Response code: " + String(httpResponseCode)); // HTTPレスポンスコードを表示
-
+      // レスポンスコードが204の場合は成功
       if(httpResponseCode == 204){
         Serial.println("Success");
-      } else {
+      } else { // 失敗した場合は再送信
         while (!http.connected())
         {
           http.POST(payload);
@@ -87,5 +94,5 @@ void loop() {
     }
   }
   http.end(); // HTTP接続を閉じる
-  delay(10000);
+  delay(10000); // 10秒待機
 }
