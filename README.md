@@ -7,5 +7,5 @@
 ESP32のファームウェアはデフォルトの状態です。
 
 ## VSCodeの環境構築
-VSCodeの環境構築は以下のリンクを参考にしてください。<br>
+VSCodeの環境構築は以下のリンクを参考にしてください。(私が書いたページです)<br>
 https://brawny-spy-652.notion.site/ESP32-10d3fa32da8340a6bfeb0e37e1e31679?pvs=4
